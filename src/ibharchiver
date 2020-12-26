@@ -46,6 +46,7 @@ class AddWindow(Gtk.Window):
 
         # Path to the resource
         select_path_btn = Gtk.Button.new_with_label('Select file to add')
+        select_path_btn.connect('clicked', self.on_path_selection_triggered)
         grid.attach(select_path_btn, 0, grid_row, 4, 1)
         grid_row += 1
 
@@ -53,6 +54,9 @@ class AddWindow(Gtk.Window):
         resource_type_lbl = Gtk.Label(label='Type')
         grid.attach(resource_type_lbl, 0, grid_row, 1, 1)
         resource_type_cb = Gtk.ComboBoxText()
+        for resource_type_row in self.db_cursor.execute('SELECT * FROM ResourceTypes;'):
+            resource_type_cb.append_text(resource_type_row[1])
+        resource_type_cb.connect('changed', self.verify_attributes)
         grid.attach(resource_type_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -60,20 +64,27 @@ class AddWindow(Gtk.Window):
         title_lbl = Gtk.Label(label='Title')
         grid.attach(title_lbl, 0, grid_row, 1, 1)
         title_entry = Gtk.Entry()
+        title_entry.connect('changed', self.verify_attributes)
         grid.attach(title_entry, 1, grid_row, 3, 1)
         grid_row += 1
 
         # Authors
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
-        author_cb = Gtk.ComboBoxText()
+        author_cb = Gtk.ComboBoxText(has_entry=True)
+        for author_row in self.db_cursor.execute('SELECT * FROM Authors;'):
+            authors_cb.append_text(author_row[1])
+        author_cb.connect('changed', self.verify_attributes)
         grid.attach(author_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
         # Category
         category_lbl = Gtk.Label(label='Category')
         grid.attach(category_lbl, 0, grid_row, 1, 1)
-        category_cb = Gtk.ComboBoxText()
+        category_cb = Gtk.ComboBoxText(has_entry=True)
+        for category_row in self.db_cursor.execute('SELECT * FROM Categories;'):
+            category_cb.append_text(category_row[1])
+        category_cb.connect('changed', self.verify_attributes)
         grid.attach(category_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -93,11 +104,19 @@ class AddWindow(Gtk.Window):
 
         # "Add" button
         add_btn = Gtk.Button.new_with_label('Add')
+        add_btn.props.sensitive = False
         add_btn.connect('clicked', self.on_add_button_clicked)
         grid.attach(add_btn, 0, grid_row, 4, 1)
 
     def on_add_button_clicked(self, widget):
-        pass
+        print('on_add_button_clicked')
+
+    def on_path_selection_triggered(self, widget):
+        # Trigger "verify_attributes" if a file has been chosen
+        print('on_path_selection_triggered')
+
+    def verify_attributes(self, widget):
+        print('verify_attributes')
 
 class MainWindow(Gtk.ApplicationWindow):
     """
@@ -144,6 +163,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Categories (cId INTEGER PRIMARY KEY ASC, cName TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Items (title TEXT NOT NULL, bytes BLOB NOT NULL, author INTEGER, category INTEGER, topic INTEGER, comments text, book INTEGER NOT NULL, chapters INTEGER NOT NULL, verses INTEGER NOT NULL, filename TEXT, FOREIGN KEY(author) REFERENCES Authors(aId), FOREIGN KEY (book) REFERENCES BibleBooks(bId), FOREIGN KEY(category) REFERENCES Categories(cId), FOREIGN KEY(topic) REFERENCES Topics(tId))')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Metadata (mdKey TEXT NOT NULL UNIQUE, mdValue TEXT NOT NULL UNIQUE)')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS ResourceTypes (rId INTEGER PRIMARY KEY ASC, rName TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Topics (tId INTEGER PRIMARY KEY ASC, tName TEXT NOT NULL UNIQUE)')
 
         if not self.db_cursor.execute('SELECT * FROM BibleBooks').fetchall():
@@ -153,6 +173,10 @@ class MainWindow(Gtk.ApplicationWindow):
 
         if not self.db_cursor.execute('SELECT * FROM Metadata').fetchall():
             self.db_cursor.execute('INSERT INTO Metadata VALUES (?, ?)', ('DB_SCHEME_VERSION', DB_SCHEME_VERSION))
+
+        if not self.db_cursor.execute('SELECT * FROM ResourceTypes').fetchall():
+            for resource_type in ('HTML', 'MP3', 'PDF'):
+                self.db_cursor.execute('INSERT INTO ResourceTypes (rName) VALUES (?)', (resource_type,))
 
         self.db_conn.commit()
 
