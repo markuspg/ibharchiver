@@ -33,6 +33,72 @@ import sqlite3
 
 DB_SCHEME_VERSION = 1
 
+class AddWindow(Gtk.Window):
+    def __init__(self, db_cursor, win_title):
+        super().__init__(title=win_title)
+        self.props.modal = True
+
+        self.db_cursor = db_cursor
+
+        grid = Gtk.Grid()
+        grid_row = 0
+        self.add(grid)
+
+        # Path to the resource
+        select_path_btn = Gtk.Button.new_with_label('Select file to add')
+        grid.attach(select_path_btn, 0, grid_row, 4, 1)
+        grid_row += 1
+
+        # Resource type
+        resource_type_lbl = Gtk.Label(label='Type')
+        grid.attach(resource_type_lbl, 0, grid_row, 1, 1)
+        resource_type_cb = Gtk.ComboBoxText()
+        grid.attach(resource_type_cb, 1, grid_row, 3, 1)
+        grid_row += 1
+
+        # Title
+        title_lbl = Gtk.Label(label='Title')
+        grid.attach(title_lbl, 0, grid_row, 1, 1)
+        title_entry = Gtk.Entry()
+        grid.attach(title_entry, 1, grid_row, 3, 1)
+        grid_row += 1
+
+        # Authors
+        author_lbl = Gtk.Label(label='Author')
+        grid.attach(author_lbl, 0, grid_row, 1, 1)
+        author_cb = Gtk.ComboBoxText()
+        grid.attach(author_cb, 1, grid_row, 3, 1)
+        grid_row += 1
+
+        # Category
+        category_lbl = Gtk.Label(label='Category')
+        grid.attach(category_lbl, 0, grid_row, 1, 1)
+        category_cb = Gtk.ComboBoxText()
+        grid.attach(category_cb, 1, grid_row, 3, 1)
+        grid_row += 1
+
+        # Bible book, chapters and verses
+        scripture_lbl = Gtk.Label(label='Scripture')
+        grid.attach(scripture_lbl, 0, grid_row, 1, 1)
+        bible_book_cb = Gtk.ComboBoxText()
+        for bible_book_row in self.db_cursor.execute('SELECT * FROM BibleBooks;'):
+            bible_book_cb.append_text(bible_book_row[1])
+        bible_book_cb.set_active(0)
+        grid.attach(bible_book_cb, 1, grid_row, 1, 1)
+        chapters_entry = Gtk.Entry()
+        grid.attach(chapters_entry, 2, grid_row, 1, 1)
+        verses_entry = Gtk.Entry()
+        grid.attach(verses_entry, 3, grid_row, 1, 1)
+        grid_row += 1
+
+        # "Add" button
+        add_btn = Gtk.Button.new_with_label('Add')
+        add_btn.connect('clicked', self.on_add_button_clicked)
+        grid.attach(add_btn, 0, grid_row, 4, 1)
+
+    def on_add_button_clicked(self, widget):
+        pass
+
 class MainWindow(Gtk.ApplicationWindow):
     """
     The main window (and class) (indirectly) containing all functionality
@@ -60,10 +126,15 @@ class MainWindow(Gtk.ApplicationWindow):
         # Buttons
         buttons_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         add_button = Gtk.Button.new_with_label('Add')
+        add_button.connect('clicked', self.on_add_button_clicked)
         buttons_box.pack_start(add_button, True, True, 0)
         play_button = Gtk.Button.new_with_label('Play')
+        play_button.connect('clicked', self.on_play_button_clicked)
+        buttons_box.pack_start(add_button, True, True, 0)
         buttons_box.pack_start(play_button, True, True, 0)
         export_button = Gtk.Button.new_with_label('Export')
+        export_button.connect('clicked', self.on_export_button_clicked)
+        buttons_box.pack_start(add_button, True, True, 0)
         buttons_box.pack_start(export_button, True, True, 0)
         main_box.pack_start(buttons_box, True, True, 0)
 
@@ -84,6 +155,16 @@ class MainWindow(Gtk.ApplicationWindow):
             self.db_cursor.execute('INSERT INTO Metadata VALUES (?, ?)', ('DB_SCHEME_VERSION', DB_SCHEME_VERSION))
 
         self.db_conn.commit()
+
+    def on_add_button_clicked(self, widget):
+        win = AddWindow(self.db_cursor, self.props.title)
+        win.show_all()
+
+    def on_export_button_clicked(self, widget):
+        pass
+
+    def on_play_button_clicked(self, widget):
+        pass
 
 def main():
     """
