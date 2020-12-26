@@ -29,6 +29,9 @@ IBHArchiver is a simple tool for creating personal archives of I'll Be Honest
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk # pylint: disable=C0413
+import sqlite3
+
+DB_SCHEME_VERSION = 1
 
 class MainWindow(Gtk.ApplicationWindow):
     """
@@ -36,6 +39,10 @@ class MainWindow(Gtk.ApplicationWindow):
     """
     def __init__(self, win_title):
         super().__init__(title=win_title)
+
+        self.db_conn = sqlite3.connect('/home/maprasser/test.db')
+        self.db_cursor = self.db_conn.cursor()
+        self.create_db_tables()
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(main_box)
@@ -59,6 +66,24 @@ class MainWindow(Gtk.ApplicationWindow):
         export_button = Gtk.Button.new_with_label('Export')
         buttons_box.pack_start(export_button, True, True, 0)
         main_box.pack_start(buttons_box, True, True, 0)
+
+    def create_db_tables(self):
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Authors (aId INTEGER PRIMARY KEY ASC, aName TEXT NOT NULL UNIQUE)')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS BibleBooks (bId INTEGER PRIMARY KEY ASC, bName TEXT NOT NULL UNIQUE)')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Categories (cId INTEGER PRIMARY KEY ASC, cName TEXT NOT NULL UNIQUE)')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Items (title TEXT NOT NULL, bytes BLOB NOT NULL, author INTEGER, category INTEGER, topic INTEGER, comments text, book INTEGER NOT NULL, chapters INTEGER NOT NULL, verses INTEGER NOT NULL, filename TEXT, FOREIGN KEY(author) REFERENCES Authors(aId), FOREIGN KEY (book) REFERENCES BibleBooks(bId), FOREIGN KEY(category) REFERENCES Categories(cId), FOREIGN KEY(topic) REFERENCES Topics(tId))')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Metadata (mdKey TEXT NOT NULL UNIQUE, mdValue TEXT NOT NULL UNIQUE)')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Topics (tId INTEGER PRIMARY KEY ASC, tName TEXT NOT NULL UNIQUE)')
+
+        if not self.db_cursor.execute('SELECT * FROM BibleBooks').fetchall():
+            bible_books = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi', 'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans', '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter', '1 John', '2 John', '3 John', 'Jude', 'Revelation']
+            for bible_book in bible_books:
+                self.db_cursor.execute('INSERT INTO BibleBooks (bName) VALUES (?)', (bible_book,))
+
+        if not self.db_cursor.execute('SELECT * FROM Metadata').fetchall():
+            self.db_cursor.execute('INSERT INTO Metadata VALUES (?, ?)', ('DB_SCHEME_VERSION', DB_SCHEME_VERSION))
+
+        self.db_conn.commit()
 
 def main():
     """
