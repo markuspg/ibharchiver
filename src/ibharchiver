@@ -45,12 +45,14 @@ class AddWindow(Gtk.Window):
         self.add(grid)
 
         # Path to the resource
-        select_path_btn = Gtk.Button.new_with_label('Select file to add')
-        select_path_btn.connect('clicked', self.on_path_selection_triggered)
+        self.path = None
+        select_path_btn = Gtk.FileChooserButton.new('Path to the file to add', Gtk.FileChooserAction.OPEN)
+        select_path_btn.connect('file-set', self.on_path_selection_triggered)
         grid.attach(select_path_btn, 0, grid_row, 4, 1)
         grid_row += 1
 
         # Resource type
+        self.type = None
         resource_type_lbl = Gtk.Label(label='Type')
         grid.attach(resource_type_lbl, 0, grid_row, 1, 1)
         resource_type_cb = Gtk.ComboBoxText()
@@ -61,6 +63,7 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Title
+        self.title = None
         title_lbl = Gtk.Label(label='Title')
         grid.attach(title_lbl, 0, grid_row, 1, 1)
         title_entry = Gtk.Entry()
@@ -69,6 +72,7 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Authors
+        self.author = None
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
         author_cb = Gtk.ComboBoxText(has_entry=True)
@@ -79,6 +83,7 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Category
+        self.category = None
         category_lbl = Gtk.Label(label='Category')
         grid.attach(category_lbl, 0, grid_row, 1, 1)
         category_cb = Gtk.ComboBoxText(has_entry=True)
@@ -89,6 +94,9 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Bible book, chapters and verses
+        self.book = None
+        self.chapters = None
+        self.verses = None
         scripture_lbl = Gtk.Label(label='Scripture')
         grid.attach(scripture_lbl, 0, grid_row, 1, 1)
         bible_book_cb = Gtk.ComboBoxText()
@@ -112,11 +120,19 @@ class AddWindow(Gtk.Window):
         print('on_add_button_clicked')
 
     def on_path_selection_triggered(self, widget):
-        # Trigger "verify_attributes" if a file has been chosen
-        print('on_path_selection_triggered')
+        self.verify_attributes(widget)
 
     def verify_attributes(self, widget):
         print('verify_attributes')
+        if self.author \
+                and self.book \
+                and self.chapters \
+                and self.category \
+                and self.path \
+                and self.title \
+                and self.type \
+                and self.verses:
+            pass
 
 class MainWindow(Gtk.ApplicationWindow):
     """
