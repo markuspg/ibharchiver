@@ -114,49 +114,49 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # "Add" button
-        add_btn = Gtk.Button.new_with_label('Add')
-        add_btn.props.sensitive = False
-        add_btn.connect('clicked', self.on_add_button_clicked)
-        grid.attach(add_btn, 0, grid_row, 4, 1)
+        self.add_btn = Gtk.Button.new_with_label('Add')
+        self.add_btn.props.sensitive = False
+        self.add_btn.connect('clicked', self.on_add_button_clicked)
+        grid.attach(self.add_btn, 0, grid_row, 4, 1)
 
     def on_add_button_clicked(self, widget):
         print('on_add_button_clicked')
 
     def on_author_changed(self, widget):
         self.author = widget.get_active_text()
-        print('on_author_changed: ' + self.author)
+        self.verify_attributes()
 
     def on_book_changed(self, widget):
         self.book = widget.get_active_text()
-        print('on_book_changed: ' + self.book)
+        self.verify_attributes()
 
     def on_category_changed(self, widget):
         self.category = widget.get_active_text()
-        print('on_category_changed: ' + self.category)
+        self.verify_attributes()
 
     def on_chapters_changed(self, widget):
         self.chapters = widget.get_text()
-        print('on_chapters_changed: ' + self.chapters)
+        self.verify_attributes()
 
     def on_path_selected(self, widget):
         self.path = widget.get_filenames()
         assert len(self.path) == 1
         self.path = self.path[0]
-        self.verify_attributes(widget)
+        self.verify_attributes()
 
     def on_title_changed(self, widget):
         self.title = widget.get_text()
-        print('on_title_changed: ' + self.title)
+        self.verify_attributes()
 
     def on_type_changed(self, widget):
         self.type = widget.get_active_text()
-        print('on_type_changed: ' + self.type)
+        self.verify_attributes()
 
     def on_verses_changed(self, widget):
         self.verses = widget.get_text()
-        print('on_verses_changed: ' + self.verses)
+        self.verify_attributes()
 
-    def verify_attributes(self, widget):
+    def verify_attributes(self):
         print('verify_attributes')
         if self.author \
                 and self.book \
@@ -166,7 +166,8 @@ class AddWindow(Gtk.Window):
                 and self.title \
                 and self.type \
                 and self.verses:
-            pass
+            self.add_btn.props.sensitive = True
+
 
 class MainWindow(Gtk.ApplicationWindow):
     """
