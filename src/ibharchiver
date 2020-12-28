@@ -72,12 +72,13 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Author
+        self.authors = [author_row[1] for author_row in self.db_cursor.execute('SELECT * FROM Authors;')]
         self.author = None
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
         author_cb = Gtk.ComboBoxText(has_entry=True)
-        for author_row in self.db_cursor.execute('SELECT * FROM Authors;'):
-            authors_cb.append_text(author_row[1])
+        for author in self.authors:
+            author_cb.append_text(author)
         author_cb.connect('changed', self.on_author_changed)
         grid.attach(author_cb, 1, grid_row, 3, 1)
         grid_row += 1
@@ -133,7 +134,8 @@ class AddWindow(Gtk.Window):
         grid.attach(self.add_btn, 0, grid_row, 4, 1)
 
     def on_add_button_clicked(self, widget):
-        print('on_add_button_clicked')
+        if self.author not in self.authors:
+            self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (self.author,))
 
     def on_author_changed(self, widget):
         self.author = widget.get_active_text()
