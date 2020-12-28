@@ -168,7 +168,8 @@ class AddWindow(Gtk.Window):
                 and self.type \
                 and self.verses:
             self.add_btn.props.sensitive = True
-
+        else:
+            self.add_btn.props.sensitive = False
 
 class MainWindow(Gtk.ApplicationWindow):
     """
