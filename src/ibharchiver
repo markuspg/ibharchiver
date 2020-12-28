@@ -84,12 +84,13 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Category
+        self.categories = [category_row[1] for category_row in self.db_cursor.execute('SELECT * FROM Categories;')]
         self.category = None
         category_lbl = Gtk.Label(label='Category')
         grid.attach(category_lbl, 0, grid_row, 1, 1)
         category_cb = Gtk.ComboBoxText(has_entry=True)
-        for category_row in self.db_cursor.execute('SELECT * FROM Categories;'):
-            category_cb.append_text(category_row[1])
+        for category in self.categories:
+            category_cb.append_text(category)
         category_cb.connect('changed', self.on_category_changed)
         grid.attach(category_cb, 1, grid_row, 3, 1)
         grid_row += 1
@@ -136,6 +137,8 @@ class AddWindow(Gtk.Window):
     def on_add_button_clicked(self, widget):
         if self.author not in self.authors:
             self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (self.author,))
+        if self.category not in self.categories:
+            self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (self.category,))
 
     def on_author_changed(self, widget):
         self.author = widget.get_active_text()
