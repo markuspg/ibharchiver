@@ -123,16 +123,20 @@ class AddWindow(Gtk.Window):
         print('on_add_button_clicked')
 
     def on_author_changed(self, widget):
-        print('on_author_changed')
+        self.author = widget.get_active_text()
+        print('on_author_changed: ' + self.author)
 
     def on_book_changed(self, widget):
-        print('on_book_changed')
+        self.book = widget.get_active_text()
+        print('on_book_changed: ' + self.book)
 
     def on_category_changed(self, widget):
-        print('on_category_changed')
+        self.category = widget.get_active_text()
+        print('on_category_changed: ' + self.category)
 
     def on_chapters_changed(self, widget):
-        print('on_chapters_changed')
+        self.chapters = widget.get_text()
+        print('on_chapters_changed: ' + self.chapters)
 
     def on_path_selected(self, widget):
         self.path = widget.get_filenames()
@@ -141,13 +145,16 @@ class AddWindow(Gtk.Window):
         self.verify_attributes(widget)
 
     def on_title_changed(self, widget):
-        print('on_title_changed')
+        self.title = widget.get_text()
+        print('on_title_changed: ' + self.title)
 
     def on_type_changed(self, widget):
-        print('on_type_changed')
+        self.type = widget.get_active_text()
+        print('on_type_changed: ' + self.type)
 
     def on_verses_changed(self, widget):
-        print('on_verses_changed')
+        self.verses = widget.get_text()
+        print('on_verses_changed: ' + self.verses)
 
     def verify_attributes(self, widget):
         print('verify_attributes')
