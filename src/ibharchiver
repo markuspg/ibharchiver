@@ -253,7 +253,12 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_add_button_clicked(self, widget):
         win = AddWindow(self.db_cursor, self.props.title)
+        win.connect('delete-event', self.on_add_window_closed)
         win.show_all()
+
+    def on_add_window_closed(self, widget, event):
+        self.db_conn.commit()
+        return False
 
     def on_export_button_clicked(self, widget):
         pass
