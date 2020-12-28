@@ -47,7 +47,7 @@ class AddWindow(Gtk.Window):
         # Path to the resource
         self.path = None
         select_path_btn = Gtk.FileChooserButton.new('Path to the file to add', Gtk.FileChooserAction.OPEN)
-        select_path_btn.connect('file-set', self.on_path_selection_triggered)
+        select_path_btn.connect('file-set', self.on_path_selected)
         grid.attach(select_path_btn, 0, grid_row, 4, 1)
         grid_row += 1
 
@@ -58,7 +58,7 @@ class AddWindow(Gtk.Window):
         resource_type_cb = Gtk.ComboBoxText()
         for resource_type_row in self.db_cursor.execute('SELECT * FROM ResourceTypes;'):
             resource_type_cb.append_text(resource_type_row[1])
-        resource_type_cb.connect('changed', self.verify_attributes)
+        resource_type_cb.connect('changed', self.on_type_changed)
         grid.attach(resource_type_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -67,18 +67,18 @@ class AddWindow(Gtk.Window):
         title_lbl = Gtk.Label(label='Title')
         grid.attach(title_lbl, 0, grid_row, 1, 1)
         title_entry = Gtk.Entry()
-        title_entry.connect('changed', self.verify_attributes)
+        title_entry.connect('changed', self.on_title_changed)
         grid.attach(title_entry, 1, grid_row, 3, 1)
         grid_row += 1
 
-        # Authors
+        # Author
         self.author = None
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
         author_cb = Gtk.ComboBoxText(has_entry=True)
         for author_row in self.db_cursor.execute('SELECT * FROM Authors;'):
             authors_cb.append_text(author_row[1])
-        author_cb.connect('changed', self.verify_attributes)
+        author_cb.connect('changed', self.on_author_changed)
         grid.attach(author_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -89,7 +89,7 @@ class AddWindow(Gtk.Window):
         category_cb = Gtk.ComboBoxText(has_entry=True)
         for category_row in self.db_cursor.execute('SELECT * FROM Categories;'):
             category_cb.append_text(category_row[1])
-        category_cb.connect('changed', self.verify_attributes)
+        category_cb.connect('changed', self.on_category_changed)
         grid.attach(category_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -103,10 +103,13 @@ class AddWindow(Gtk.Window):
         for bible_book_row in self.db_cursor.execute('SELECT * FROM BibleBooks;'):
             bible_book_cb.append_text(bible_book_row[1])
         bible_book_cb.set_active(0)
+        bible_book_cb.connect('changed', self.on_book_changed)
         grid.attach(bible_book_cb, 1, grid_row, 1, 1)
         chapters_entry = Gtk.Entry()
+        chapters_entry.connect('changed', self.on_chapters_changed)
         grid.attach(chapters_entry, 2, grid_row, 1, 1)
         verses_entry = Gtk.Entry()
+        verses_entry.connect('changed', self.on_verses_changed)
         grid.attach(verses_entry, 3, grid_row, 1, 1)
         grid_row += 1
 
@@ -119,8 +122,32 @@ class AddWindow(Gtk.Window):
     def on_add_button_clicked(self, widget):
         print('on_add_button_clicked')
 
-    def on_path_selection_triggered(self, widget):
+    def on_author_changed(self, widget):
+        print('on_author_changed')
+
+    def on_book_changed(self, widget):
+        print('on_book_changed')
+
+    def on_category_changed(self, widget):
+        print('on_category_changed')
+
+    def on_chapters_changed(self, widget):
+        print('on_chapters_changed')
+
+    def on_path_selected(self, widget):
+        self.path = widget.get_filenames()
+        assert len(self.path) == 1
+        self.path = self.path[0]
         self.verify_attributes(widget)
+
+    def on_title_changed(self, widget):
+        print('on_title_changed')
+
+    def on_type_changed(self, widget):
+        print('on_type_changed')
+
+    def on_verses_changed(self, widget):
+        print('on_verses_changed')
 
     def verify_attributes(self, widget):
         print('verify_attributes')
