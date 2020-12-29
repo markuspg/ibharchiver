@@ -29,6 +29,7 @@ IBHArchiver is a simple tool for creating personal archives of I'll Be Honest
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk # pylint: disable=C0413
+import lzma
 import sqlite3
 
 DB_SCHEME_VERSION = 1
@@ -136,6 +137,11 @@ class AddWindow(Gtk.Window):
         grid.attach(self.add_btn, 0, grid_row, 4, 1)
 
     def on_add_button_clicked(self, widget):
+        with open(self.path, 'rb') as bin_file:
+            byte_arr = bin_file.read()
+            uncompressed_size = len(byte_arr)
+            compressed_byte_arr = lzma.compress(byte_arr, lzma.FORMAT_XZ, lzma.CHECK_SHA256, 9 | lzma.PRESET_EXTREME)
+            compressed_size = len(compressed_byte_arr)
         if self.author not in self.authors:
             self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (self.author,))
         if self.category not in self.categories:
