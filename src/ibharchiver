@@ -151,10 +151,11 @@ class AddWindow(Gtk.Window):
         if self.category not in self.categories:
             self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (self.category,))
         cId = self.db_cursor.execute('SELECT cId FROM Categories WHERE cName = ?;', (self.category,)).fetchone()[0]
+        rId = self.db_cursor.execute('SELECT rId FROM ResourceTypes WHERE rName = ?;', (self.type,)).fetchone()[0]
         if self.topic and self.topic not in self.topics:
             self.db_cursor.execute('INSERT INTO Topics (tName) VALUES (?);', (self.topic,))
         tId = self.db_cursor.execute('SELECT tId FROM Topics WHERE tName = ?;', (self.topic,)).fetchone()[0]
-        self.db_cursor.execute('INSERT INTO Items (title, bytes, author, category, topic, book, chapters, verses, filename, importDate, uncompressedSize, compressedSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (self.title, compressed_byte_arr, int(aId), int(cId), int(tId), int(bId), int(self.chapters), int(self.verses), os.path.basename(self.path), int(time.time()), int(uncompressed_size), int(compressed_size)))
+        self.db_cursor.execute('INSERT INTO Items (type, title, bytes, author, category, topic, book, chapters, verses, filename, importDate, uncompressedSize, compressedSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (int(rId), self.title, compressed_byte_arr, int(aId), int(cId), int(tId), int(bId), int(self.chapters), int(self.verses), os.path.basename(self.path), int(time.time()), int(uncompressed_size), int(compressed_size)))
 
     def on_author_changed(self, widget):
         self.author = widget.get_active_text()
@@ -251,7 +252,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Authors (aId INTEGER PRIMARY KEY ASC, aName TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS BibleBooks (bId INTEGER PRIMARY KEY ASC, bName TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Categories (cId INTEGER PRIMARY KEY ASC, cName TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Items (title TEXT NOT NULL, bytes BLOB NOT NULL, author INTEGER, category INTEGER, topic INTEGER, comments text, book INTEGER NOT NULL, chapters INTEGER NOT NULL, verses INTEGER NOT NULL, filename TEXT, importDate INTEGER, lastExportDate INTEGER, lastPlayDate INTEGER, uncompressedSize INTEGER NOT NULL, compressedSize INTEGER NOT NULL, FOREIGN KEY(author) REFERENCES Authors(aId), FOREIGN KEY (book) REFERENCES BibleBooks(bId), FOREIGN KEY(category) REFERENCES Categories(cId), FOREIGN KEY(topic) REFERENCES Topics(tId))')
+        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Items (type INTEGER, title TEXT NOT NULL, bytes BLOB NOT NULL, author INTEGER, category INTEGER, topic INTEGER, comments text, book INTEGER NOT NULL, chapters INTEGER NOT NULL, verses INTEGER NOT NULL, filename TEXT, importDate INTEGER, lastExportDate INTEGER, lastPlayDate INTEGER, uncompressedSize INTEGER NOT NULL, compressedSize INTEGER NOT NULL, FOREIGN KEY(author) REFERENCES Authors(aId), FOREIGN KEY (book) REFERENCES BibleBooks(bId), FOREIGN KEY(category) REFERENCES Categories(cId), FOREIGN KEY(topic) REFERENCES Topics(tId), FOREIGN KEY(type) REFERENCES ResourceTypes(rId) UNIQUE(title, type))')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Metadata (mdKey TEXT NOT NULL UNIQUE, mdValue TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS ResourceTypes (rId INTEGER PRIMARY KEY ASC, rName TEXT NOT NULL UNIQUE)')
         self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Topics (tId INTEGER PRIMARY KEY ASC, tName TEXT NOT NULL UNIQUE)')
