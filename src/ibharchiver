@@ -30,7 +30,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk # pylint: disable=C0413
 import lzma
+import os
 import sqlite3
+import time
 
 DB_SCHEME_VERSION = 1
 
@@ -144,10 +146,15 @@ class AddWindow(Gtk.Window):
             compressed_size = len(compressed_byte_arr)
         if self.author not in self.authors:
             self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (self.author,))
+        aId = self.db_cursor.execute('SELECT aId FROM Authors WHERE aName = ?;', (self.author,)).fetchone()[0]
+        bId = self.db_cursor.execute('SELECT bId FROM BibleBooks WHERE bName = ?;', (self.book,)).fetchone()[0]
         if self.category not in self.categories:
             self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (self.category,))
+        cId = self.db_cursor.execute('SELECT cId FROM Categories WHERE cName = ?;', (self.category,)).fetchone()[0]
         if self.topic and self.topic not in self.topics:
             self.db_cursor.execute('INSERT INTO Topics (tName) VALUES (?);', (self.topic,))
+        tId = self.db_cursor.execute('SELECT tId FROM Topics WHERE tName = ?;', (self.topic,)).fetchone()[0]
+        self.db_cursor.execute('INSERT INTO Items (title, bytes, author, category, topic, book, chapters, verses, filename, importDate, uncompressedSize, compressedSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (self.title, compressed_byte_arr, int(aId), int(cId), int(tId), int(bId), int(self.chapters), int(self.verses), os.path.basename(self.path), int(time.time()), int(uncompressed_size), int(compressed_size)))
 
     def on_author_changed(self, widget):
         self.author = widget.get_active_text()
