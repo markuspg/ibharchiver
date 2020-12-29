@@ -28,6 +28,7 @@ IBHArchiver is a simple tool for creating personal archives of I'll Be Honest
 
 import gi
 gi.require_version('Gtk', '3.0')
+from gi.repository import GObject # pylint: disable=C0413
 from gi.repository import Gtk # pylint: disable=C0413
 import lzma
 import os
@@ -216,6 +217,16 @@ class AddWindow(Gtk.Window):
         else:
             self.add_btn.props.sensitive = False
 
+class DBAdaptor:
+    def __init__(self, db_cursor, model):
+        self.db_cursor = db_cursor
+        self.model = model
+
+        res = self.db_cursor.execute('SELECT rName, title, aName, cName, tName FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type INNER JOIN Topics ON Topics.tId = Items.topic;')
+        for re in res:
+            print(re)
+            self.model.append([re[0], re[1]])
+
 class MainWindow(Gtk.ApplicationWindow):
     """
     The main window (and class) (indirectly) containing all functionality
@@ -227,6 +238,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor = self.db_conn.cursor()
         self.create_db_tables()
 
+        self.model = Gtk.ListStore.new([str, str])
+        self.db_adaptor = DBAdaptor(self.db_cursor, self.model)
+
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(main_box)
 
@@ -236,8 +250,18 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Items display
         display_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        tree_view = Gtk.TreeView()
+        tree_view = Gtk.TreeView.new_with_model(self.model)
         display_box.pack_start(tree_view, True, True, 0)
+        type_column = Gtk.TreeViewColumn('Type', Gtk.CellRendererPixbuf())
+        tree_view.append_column(type_column)
+        title_column = Gtk.TreeViewColumn('Title', Gtk.CellRendererText())
+        tree_view.append_column(title_column)
+        author_column = Gtk.TreeViewColumn('Author', Gtk.CellRendererText())
+        tree_view.append_column(author_column)
+        category_column = Gtk.TreeViewColumn('Category', Gtk.CellRendererText())
+        tree_view.append_column(category_column)
+        topic_column = Gtk.TreeViewColumn('Topic', Gtk.CellRendererText())
+        tree_view.append_column(topic_column)
         main_box.pack_start(display_box, True, True, 0)
 
         # Buttons
