@@ -1,4 +1,9 @@
-# License
+# README
+
+IllBeHonestArchiver is intended as simple tool to support in creating a private
+archive of [I'll Be Honest](https://illbehonest.com) resources.
+
+## License
 
 MIT License
 
