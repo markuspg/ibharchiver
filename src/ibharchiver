@@ -222,10 +222,10 @@ class DBAdaptor:
         self.db_cursor = db_cursor
         self.model = model
 
-        res = self.db_cursor.execute('SELECT rName, title, aName, cName, tName FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type INNER JOIN Topics ON Topics.tId = Items.topic;')
+        res = self.db_cursor.execute('SELECT rName, title, aName, cName, topic FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;')
         for re in res:
             print(re)
-            self.model.append([re[0], re[1], re[2], re[3], re[4]])
+            self.model.append([re[0], re[1], re[2], re[3], str(re[4])])
 
 class MainWindow(Gtk.ApplicationWindow):
     """
