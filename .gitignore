@@ -1,0 +1,6 @@
+# Files
+*.swo
+*.swp
+
+# Folders
+__pycache__/
