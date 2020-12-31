@@ -321,9 +321,10 @@ class MainWindow(Gtk.ApplicationWindow):
         if tree_iter is not None:
             res = self.db_cursor.execute('SELECT rId from ResourceTypes WHERE rName = ?;', (model[tree_iter][0],)).fetchall()
             assert len(res) == 1
-            res = self.db_cursor.execute('SELECT bytes, filename from Items WHERE type = ? AND title = ?;', (res[0][0], model[tree_iter][1])).fetchall()
+            res = self.db_cursor.execute('SELECT bytes, filename, uncompressedSize from Items WHERE type = ? AND title = ?;', (res[0][0], model[tree_iter][1])).fetchall()
             assert len(res) == 1
-            print(res[0][1])
+            with open(res[0][1], 'wb') as out_file:
+                assert out_file.write(lzma.decompress(res[0][0])) == res[0][2]
 
     def on_play_button_clicked(self, widget):
         pass
