@@ -37,8 +37,6 @@ import time
 
 from database.ibhdatabase import IBHDatabase
 
-DB_SCHEME_VERSION = 1
-
 class AddWindow(Gtk.Window):
     def __init__(self, db_cursor, win_title):
         super().__init__(title=win_title)
@@ -243,7 +241,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db = IBHDatabase()
         self.db_conn = self.db.db_conn
         self.db_cursor = self.db.db_cursor
-        self.create_db_tables()
 
         self.model = Gtk.ListStore(str, str, str, str, str)
         self.db_adaptor = DBAdaptor(self.db_cursor, self.model)
@@ -285,29 +282,6 @@ class MainWindow(Gtk.ApplicationWindow):
         buttons_box.pack_start(add_button, True, True, 0)
         buttons_box.pack_start(export_button, True, True, 0)
         main_box.pack_start(buttons_box, True, True, 0)
-
-    def create_db_tables(self):
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Authors (aId INTEGER PRIMARY KEY ASC, aName TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS BibleBooks (bId INTEGER PRIMARY KEY ASC, bName TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Categories (cId INTEGER PRIMARY KEY ASC, cName TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Items (type INTEGER, title TEXT NOT NULL, bytes BLOB NOT NULL, author INTEGER, category INTEGER, topic INTEGER, comments text, book INTEGER, chapters INTEGER, verses INTEGER, filename TEXT, importDate INTEGER, lastExportDate INTEGER, lastPlayDate INTEGER, uncompressedSize INTEGER NOT NULL, compressedSize INTEGER NOT NULL, FOREIGN KEY(author) REFERENCES Authors(aId), FOREIGN KEY (book) REFERENCES BibleBooks(bId), FOREIGN KEY(category) REFERENCES Categories(cId), FOREIGN KEY(topic) REFERENCES Topics(tId), FOREIGN KEY(type) REFERENCES ResourceTypes(rId) UNIQUE(title, type))')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Metadata (mdKey TEXT NOT NULL UNIQUE, mdValue TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS ResourceTypes (rId INTEGER PRIMARY KEY ASC, rName TEXT NOT NULL UNIQUE)')
-        self.db_cursor.execute('CREATE TABLE IF NOT EXISTS Topics (tId INTEGER PRIMARY KEY ASC, tName TEXT NOT NULL UNIQUE)')
-
-        if not self.db_cursor.execute('SELECT * FROM BibleBooks').fetchall():
-            bible_books = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings', '1 Chronicles', '2 Chronicles', 'Ezra', 'Nehemiah', 'Esther', 'Job', 'Psalms', 'Proverbs', 'Ecclesiastes', 'Song of Solomon', 'Isaiah', 'Jeremiah', 'Lamentations', 'Ezekiel', 'Daniel', 'Hosea', 'Joel', 'Amos', 'Obadiah', 'Jonah', 'Micah', 'Nahum', 'Habakkuk', 'Zephaniah', 'Haggai', 'Zechariah', 'Malachi', 'Matthew', 'Mark', 'Luke', 'John', 'Acts', 'Romans', '1 Corinthians', '2 Corinthians', 'Galatians', 'Ephesians', 'Philippians', 'Colossians', '1 Thessalonians', '2 Thessalonians', '1 Timothy', '2 Timothy', 'Titus', 'Philemon', 'Hebrews', 'James', '1 Peter', '2 Peter', '1 John', '2 John', '3 John', 'Jude', 'Revelation']
-            for bible_book in bible_books:
-                self.db_cursor.execute('INSERT INTO BibleBooks (bName) VALUES (?)', (bible_book,))
-
-        if not self.db_cursor.execute('SELECT * FROM Metadata').fetchall():
-            self.db_cursor.execute('INSERT INTO Metadata VALUES (?, ?)', ('DB_SCHEME_VERSION', DB_SCHEME_VERSION))
-
-        if not self.db_cursor.execute('SELECT * FROM ResourceTypes').fetchall():
-            for resource_type in ('HTML', 'MP3', 'PDF'):
-                self.db_cursor.execute('INSERT INTO ResourceTypes (rName) VALUES (?)', (resource_type,))
-
-        self.db_conn.commit()
 
     def on_add_button_clicked(self, widget):
         win = AddWindow(self.db_cursor, self.props.title)
