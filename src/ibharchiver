@@ -238,7 +238,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor = self.db_conn.cursor()
         self.create_db_tables()
 
-        self.model = Gtk.ListStore.new([str, str])
+        self.model = Gtk.ListStore(str, str)
         self.db_adaptor = DBAdaptor(self.db_cursor, self.model)
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
