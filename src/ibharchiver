@@ -254,18 +254,18 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Items display
         display_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        tree_view = Gtk.TreeView.new_with_model(self.model)
-        display_box.pack_start(tree_view, True, True, 0)
+        self.tree_view = Gtk.TreeView.new_with_model(self.model)
+        display_box.pack_start(self.tree_view, True, True, 0)
         type_column = Gtk.TreeViewColumn('Type', Gtk.CellRendererText(), text=0)
-        tree_view.append_column(type_column)
+        self.tree_view.append_column(type_column)
         title_column = Gtk.TreeViewColumn('Title', Gtk.CellRendererText(), text=1)
-        tree_view.append_column(title_column)
+        self.tree_view.append_column(title_column)
         author_column = Gtk.TreeViewColumn('Author', Gtk.CellRendererText(), text=2)
-        tree_view.append_column(author_column)
+        self.tree_view.append_column(author_column)
         category_column = Gtk.TreeViewColumn('Category', Gtk.CellRendererText(), text=3)
-        tree_view.append_column(category_column)
+        self.tree_view.append_column(category_column)
         topic_column = Gtk.TreeViewColumn('Topic', Gtk.CellRendererText(), text=4)
-        tree_view.append_column(topic_column)
+        self.tree_view.append_column(topic_column)
         main_box.pack_start(display_box, True, True, 0)
 
         # Buttons
@@ -316,7 +316,14 @@ class MainWindow(Gtk.ApplicationWindow):
         return False
 
     def on_export_button_clicked(self, widget):
-        pass
+        selection = self.tree_view.get_selection()
+        model, tree_iter = selection.get_selected()
+        if tree_iter is not None:
+            res = self.db_cursor.execute('SELECT rId from ResourceTypes WHERE rName = ?;', (model[tree_iter][0],)).fetchall()
+            assert len(res) == 1
+            res = self.db_cursor.execute('SELECT bytes, filename from Items WHERE type = ? AND title = ?;', (res[0][0], model[tree_iter][1])).fetchall()
+            assert len(res) == 1
+            print(res[0][1])
 
     def on_play_button_clicked(self, widget):
         pass
