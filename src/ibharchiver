@@ -254,7 +254,7 @@ class MainWindow(Gtk.ApplicationWindow):
         display_box.pack_start(tree_view, True, True, 0)
         type_column = Gtk.TreeViewColumn('Type', Gtk.CellRendererPixbuf())
         tree_view.append_column(type_column)
-        title_column = Gtk.TreeViewColumn('Title', Gtk.CellRendererText())
+        title_column = Gtk.TreeViewColumn('Title', Gtk.CellRendererText(), text=1)
         tree_view.append_column(title_column)
         author_column = Gtk.TreeViewColumn('Author', Gtk.CellRendererText())
         tree_view.append_column(author_column)
