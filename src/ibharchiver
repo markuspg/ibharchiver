@@ -225,7 +225,7 @@ class DBAdaptor:
         res = self.db_cursor.execute('SELECT rName, title, aName, cName, tName FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type INNER JOIN Topics ON Topics.tId = Items.topic;')
         for re in res:
             print(re)
-            self.model.append([re[0], re[1]])
+            self.model.append([re[0], re[1], re[2], re[3], re[4]])
 
 class MainWindow(Gtk.ApplicationWindow):
     """
@@ -238,7 +238,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor = self.db_conn.cursor()
         self.create_db_tables()
 
-        self.model = Gtk.ListStore(str, str)
+        self.model = Gtk.ListStore(str, str, str, str, str)
         self.db_adaptor = DBAdaptor(self.db_cursor, self.model)
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -256,11 +256,11 @@ class MainWindow(Gtk.ApplicationWindow):
         tree_view.append_column(type_column)
         title_column = Gtk.TreeViewColumn('Title', Gtk.CellRendererText(), text=1)
         tree_view.append_column(title_column)
-        author_column = Gtk.TreeViewColumn('Author', Gtk.CellRendererText())
+        author_column = Gtk.TreeViewColumn('Author', Gtk.CellRendererText(), text=2)
         tree_view.append_column(author_column)
-        category_column = Gtk.TreeViewColumn('Category', Gtk.CellRendererText())
+        category_column = Gtk.TreeViewColumn('Category', Gtk.CellRendererText(), text=3)
         tree_view.append_column(category_column)
-        topic_column = Gtk.TreeViewColumn('Topic', Gtk.CellRendererText())
+        topic_column = Gtk.TreeViewColumn('Topic', Gtk.CellRendererText(), text=4)
         tree_view.append_column(topic_column)
         main_box.pack_start(display_box, True, True, 0)
 
