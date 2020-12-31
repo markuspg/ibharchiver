@@ -3,6 +3,16 @@
 IllBeHonestArchiver is intended as simple tool to support in creating a private
 archive of [I'll Be Honest](https://illbehonest.com) resources.
 
+## Features
+
+* Import resources from I'll be Honest
+* Export selected resources to the current working directory
+
+## Roadmap
+
+* Allow commenting saved resources
+* Playback of saved resources
+
 ## License
 
 MIT License
