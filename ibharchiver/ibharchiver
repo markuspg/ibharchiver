@@ -99,12 +99,11 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Topic
-        self.topics = [topic_row[1] for topic_row in self.db_cursor.execute('SELECT * FROM Topics;')]
         self.topic = None
         topic_lbl = Gtk.Label(label='Topic')
         grid.attach(topic_lbl, 0, grid_row, 1, 1)
         topic_cb = Gtk.ComboBoxText(has_entry=True)
-        for topic in self.topics:
+        for topic in self.db.topics_table.get_topics():
             topic_cb.append_text(topic)
         topic_cb.connect('changed', self.on_topic_changed)
         grid.attach(topic_cb, 1, grid_row, 3, 1)
@@ -155,10 +154,9 @@ class AddWindow(Gtk.Window):
             chapters = int(self.chapters)
         rId = self.db.resource_types_table.get_resource_type_id(self.type)
         tId = None
-        if self.topic and self.topic not in self.topics:
-            self.db_cursor.execute('INSERT INTO Topics (tName) VALUES (?);', (self.topic,))
         if self.topic:
-            tId = int(self.db_cursor.execute('SELECT tId FROM Topics WHERE tName = ?;', (self.topic,)).fetchone()[0])
+            self.db.topics_table.add_topic(self.topic)
+            tId = self.db.topics_table.get_topic_id(self.topic)
         verses = None
         if self.verses:
             verses = int(self.verses)
@@ -215,15 +213,15 @@ class AddWindow(Gtk.Window):
             self.add_btn.props.sensitive = False
 
 class DBAdaptor:
-    def __init__(self, db_cursor, model):
+    def __init__(self, db, db_cursor, model):
+        self.db = db
         self.db_cursor = db_cursor
         self.model = model
 
-        topics = [res[0] for res in self.db_cursor.execute('SELECT tName FROM Topics;')]
         res = self.db_cursor.execute('SELECT rName, title, aName, cName, topic FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;')
         for re in res:
             if re[4]:
-                topic = topics[re[4] - 1]
+                topic = self.db.topics_table.get_topic_by_id(re[4])
             else:
                 topic = str()
             self.model.append([re[0], re[1], re[2], re[3], str(topic)])
@@ -240,7 +238,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.db_cursor = self.db.db_cursor
 
         self.model = Gtk.ListStore(str, str, str, str, str)
-        self.db_adaptor = DBAdaptor(self.db_cursor, self.model)
+        self.db_adaptor = DBAdaptor(self.db, self.db_cursor, self.model)
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(main_box)
