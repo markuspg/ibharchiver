@@ -15,10 +15,10 @@ class CategoriesTable:
     def add_category(self, category):
         if category not in self.cache:
             self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (category,))
-            self.cache[category] = self.get_category_id(category)
+            self.cache[category] = int(self.db_cursor.execute('SELECT cId FROM Categories WHERE cName = ?;', (category,)).fetchone()[0])
 
     def get_category_id(self, category):
-        return int(self.db_cursor.execute('SELECT cId FROM Categories WHERE cName = ?;', (category,)).fetchone()[0])
+        return self.cache[category]
 
     def get_categories(self):
         return self.cache.keys()

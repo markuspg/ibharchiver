@@ -15,10 +15,10 @@ class AuthorsTable:
     def add_author(self, author):
         if author not in self.cache:
             self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (author,))
-            self.cache[author] = self.get_author_id(author)
+            self.cache[author] = int(self.db_cursor.execute('SELECT aId FROM Authors WHERE aName = ?;', (author,)).fetchone()[0])
 
     def get_author_id(self, author):
-        return int(self.db_cursor.execute('SELECT aId FROM Authors WHERE aName = ?;', (author,)).fetchone()[0])
+        self.cache[author]
 
     def get_authors(self):
         return self.cache.keys()
