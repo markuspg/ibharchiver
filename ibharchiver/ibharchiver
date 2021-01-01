@@ -88,12 +88,11 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Category
-        self.categories = [category_row[1] for category_row in self.db_cursor.execute('SELECT * FROM Categories;')]
         self.category = None
         category_lbl = Gtk.Label(label='Category')
         grid.attach(category_lbl, 0, grid_row, 1, 1)
         category_cb = Gtk.ComboBoxText(has_entry=True)
-        for category in self.categories:
+        for category in self.db.categories_table.get_categories():
             category_cb.append_text(category)
         category_cb.connect('changed', self.on_category_changed)
         grid.attach(category_cb, 1, grid_row, 3, 1)
@@ -149,9 +148,8 @@ class AddWindow(Gtk.Window):
         bId = None
         if self.book:
             bId = int(self.db_cursor.execute('SELECT bId FROM BibleBooks WHERE bName = ?;', (self.book,)).fetchone()[0])
-        if self.category not in self.categories:
-            self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (self.category,))
-        cId = int(self.db_cursor.execute('SELECT cId FROM Categories WHERE cName = ?;', (self.category,)).fetchone()[0])
+        self.db.categories_table.add_category(self.category)
+        cId = self.db.categories_table.get_category_id(self.category)
         chapters = None
         if self.chapters:
             chapters = int(self.chapters)
