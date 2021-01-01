@@ -61,8 +61,8 @@ class AddWindow(Gtk.Window):
         resource_type_lbl = Gtk.Label(label='Type')
         grid.attach(resource_type_lbl, 0, grid_row, 1, 1)
         resource_type_cb = Gtk.ComboBoxText()
-        for resource_type_row in self.db_cursor.execute('SELECT * FROM ResourceTypes;'):
-            resource_type_cb.append_text(resource_type_row[1])
+        for resource_type in self.db.resource_types_table.get_resource_types():
+            resource_type_cb.append_text(resource_type)
         resource_type_cb.connect('changed', self.on_type_changed)
         grid.attach(resource_type_cb, 1, grid_row, 3, 1)
         grid_row += 1
@@ -153,7 +153,7 @@ class AddWindow(Gtk.Window):
         chapters = None
         if self.chapters:
             chapters = int(self.chapters)
-        rId = int(self.db_cursor.execute('SELECT rId FROM ResourceTypes WHERE rName = ?;', (self.type,)).fetchone()[0])
+        rId = self.db.resource_types_table.get_resource_type_id(self.type)
         tId = None
         if self.topic and self.topic not in self.topics:
             self.db_cursor.execute('INSERT INTO Topics (tName) VALUES (?);', (self.topic,))
@@ -293,9 +293,8 @@ class MainWindow(Gtk.ApplicationWindow):
         selection = self.tree_view.get_selection()
         model, tree_iter = selection.get_selected()
         if tree_iter is not None:
-            res = self.db_cursor.execute('SELECT rId from ResourceTypes WHERE rName = ?;', (model[tree_iter][0],)).fetchall()
-            assert len(res) == 1
-            res = self.db_cursor.execute('SELECT bytes, filename, uncompressedSize from Items WHERE type = ? AND title = ?;', (res[0][0], model[tree_iter][1])).fetchall()
+            rId = self.db.resource_types_table.get_resource_type_id(model[tree_iter][0])
+            res = self.db_cursor.execute('SELECT bytes, filename, uncompressedSize from Items WHERE type = ? AND title = ?;', (rId, model[tree_iter][1])).fetchall()
             assert len(res) == 1
             with open(res[0][1], 'wb') as out_file:
                 assert out_file.write(lzma.decompress(res[0][0])) == res[0][2]
