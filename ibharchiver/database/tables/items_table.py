@@ -21,7 +21,7 @@ class ItemsTable:
             '  FOREIGN KEY(category) REFERENCES Categories(cId),' \
             '  FOREIGN KEY(topic) REFERENCES Topics(tId),' \
             '  FOREIGN KEY(type) REFERENCES ResourceTypes(rId)' \
-            '  UNIQUE(title, type))'
+            '  UNIQUE(title, type));'
 
     def __init__(self, db_cursor):
         self.db_cursor = db_cursor

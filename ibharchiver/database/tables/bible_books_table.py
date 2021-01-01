@@ -15,16 +15,16 @@ class BibleBooksTable:
                    'Jude', 'Revelation')
     CREATE_TABLE_CMD = 'CREATE TABLE IF NOT EXISTS BibleBooks' \
             ' (bId   INTEGER PRIMARY KEY ASC,' \
-             ' bName TEXT NOT NULL UNIQUE)'
+             ' bName TEXT NOT NULL UNIQUE);'
 
     def __init__(self, db_cursor):
         self.db_cursor = db_cursor
 
         self.db_cursor.execute(self.CREATE_TABLE_CMD)
 
-        if not self.db_cursor.execute('SELECT * FROM BibleBooks').fetchall():
+        if not self.db_cursor.execute('SELECT * FROM BibleBooks;').fetchall():
             for bible_book in self.BIBLE_BOOKS:
-                self.db_cursor.execute('INSERT INTO BibleBooks (bName) VALUES (?)', (bible_book,))
+                self.db_cursor.execute('INSERT INTO BibleBooks (bName) VALUES (?);', (bible_book,))
 
         self.cache = dict()
         for bible_book_row in self.db_cursor.execute('SELECT * FROM BibleBooks;'):

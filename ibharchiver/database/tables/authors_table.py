@@ -1,7 +1,7 @@
 class AuthorsTable:
     CREATE_TABLE_CMD = 'CREATE TABLE IF NOT EXISTS Authors' \
             ' (aId   INTEGER PRIMARY KEY ASC,' \
-             ' aName TEXT NOT NULL UNIQUE)'
+             ' aName TEXT NOT NULL UNIQUE);'
 
     def __init__(self, db_cursor):
         self.db_cursor = db_cursor
@@ -18,7 +18,7 @@ class AuthorsTable:
             self.cache[author] = int(self.db_cursor.execute('SELECT aId FROM Authors WHERE aName = ?;', (author,)).fetchone()[0])
 
     def get_author_id(self, author):
-        self.cache[author]
+        return self.cache[author]
 
     def get_authors(self):
         return self.cache.keys()
