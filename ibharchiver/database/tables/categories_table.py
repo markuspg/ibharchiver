@@ -21,4 +21,4 @@ class CategoriesTable:
         return self.cache[category]
 
     def get_categories(self):
-        return self.cache.keys()
+        return sorted(list(self.cache.keys()))

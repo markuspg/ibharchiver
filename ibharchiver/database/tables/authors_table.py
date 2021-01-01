@@ -21,4 +21,4 @@ class AuthorsTable:
         return self.cache[author]
 
     def get_authors(self):
-        return self.cache.keys()
+        return sorted(list(self.cache.keys()))

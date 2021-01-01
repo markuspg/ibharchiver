@@ -26,4 +26,4 @@ class TopicsTable:
         return self.cache[topic]
 
     def get_topics(self):
-        return self.cache.keys()
+        return sorted(list(self.cache.keys()))

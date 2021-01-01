@@ -21,4 +21,4 @@ class ResourceTypesTable:
         return self.cache[resource_type]
 
     def get_resource_types(self):
-        return self.cache.keys()
+        return sorted(list(self.cache.keys()))
