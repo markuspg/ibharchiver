@@ -9,14 +9,14 @@ from database.tables.resource_types_table import ResourceTypesTable
 from database.tables.topics_table import TopicsTable
 
 class IBHDatabase:
-    def __init__(self):
+    def __init__(self, authors_model):
         self.db_conn = sqlite3.connect('/home/maprasser/test.db')
         self.db_cursor = self.db_conn.cursor()
 
-        self._create_tables()
+        self._create_tables(authors_model)
 
-    def _create_tables(self):
-        self.authors_table = AuthorsTable(self.db_cursor)
+    def _create_tables(self, authors_model):
+        self.authors_table = AuthorsTable(self.db_cursor, authors_model)
         self.bible_books_table = BibleBooksTable(self.db_cursor)
         self.categories_table = CategoriesTable(self.db_cursor)
         self.items_table = ItemsTable(self.db_cursor)

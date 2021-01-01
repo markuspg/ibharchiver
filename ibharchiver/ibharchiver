@@ -35,10 +35,11 @@ import os
 from database.ibhdatabase import IBHDatabase
 
 class AddWindow(Gtk.Window):
-    def __init__(self, db, db_cursor, win_title):
+    def __init__(self, db, db_cursor, win_title, authors_model):
         super().__init__(title=win_title)
         self.props.modal = True
 
+        self.authors_model = authors_model
         self.db = db
         self.db_cursor = db_cursor
 
@@ -77,10 +78,9 @@ class AddWindow(Gtk.Window):
         self.author = None
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
-        author_cb = Gtk.ComboBoxText(has_entry=True)
-        for author in self.db.authors_table.get_authors():
-            author_cb.append_text(author)
+        author_cb = Gtk.ComboBox.new_with_model_and_entry(self.authors_model)
         author_cb.connect('changed', self.on_author_changed)
+        author_cb.set_entry_text_column(0)
         grid.attach(author_cb, 1, grid_row, 3, 1)
         grid_row += 1
 
@@ -157,7 +157,11 @@ class AddWindow(Gtk.Window):
         self.db.items_table.add_resource(rId, self.title, byte_arr, aId, cId, tId, bId, chapters, verses, os.path.basename(self.path))
 
     def on_author_changed(self, widget):
-        self.author = widget.get_active_text()
+        active_iter = widget.get_active_iter()
+        if active_iter:
+            self.author = self.authors_model[active_iter][0]
+        else:
+            self.author = widget.get_child().get_text()
         self.verify_attributes()
 
     def on_book_changed(self, widget):
@@ -222,7 +226,9 @@ class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, win_title):
         super().__init__(title=win_title)
 
-        self.db = IBHDatabase()
+        self.authors_model = Gtk.ListStore(str)
+
+        self.db = IBHDatabase(self.authors_model)
         self.db_conn = self.db.db_conn
         self.db_cursor = self.db.db_cursor
 
@@ -268,7 +274,7 @@ class MainWindow(Gtk.ApplicationWindow):
         main_box.pack_start(buttons_box, True, True, 0)
 
     def on_add_button_clicked(self, widget):
-        win = AddWindow(self.db, self.db_cursor, self.props.title)
+        win = AddWindow(self.db, self.db_cursor, self.props.title, self.authors_model)
         win.connect('delete-event', self.on_add_window_closed)
         win.show_all()
 
