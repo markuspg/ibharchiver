@@ -38,10 +38,11 @@ import time
 from database.ibhdatabase import IBHDatabase
 
 class AddWindow(Gtk.Window):
-    def __init__(self, db_cursor, win_title):
+    def __init__(self, db, db_cursor, win_title):
         super().__init__(title=win_title)
         self.props.modal = True
 
+        self.db = db
         self.db_cursor = db_cursor
 
         grid = Gtk.Grid()
@@ -76,12 +77,11 @@ class AddWindow(Gtk.Window):
         grid_row += 1
 
         # Author
-        self.authors = [author_row[1] for author_row in self.db_cursor.execute('SELECT * FROM Authors;')]
         self.author = None
         author_lbl = Gtk.Label(label='Author')
         grid.attach(author_lbl, 0, grid_row, 1, 1)
         author_cb = Gtk.ComboBoxText(has_entry=True)
-        for author in self.authors:
+        for author in self.db.authors_table.get_authors():
             author_cb.append_text(author)
         author_cb.connect('changed', self.on_author_changed)
         grid.attach(author_cb, 1, grid_row, 3, 1)
@@ -144,9 +144,8 @@ class AddWindow(Gtk.Window):
             uncompressed_size = len(byte_arr)
             compressed_byte_arr = lzma.compress(byte_arr, lzma.FORMAT_XZ, lzma.CHECK_SHA256, 9 | lzma.PRESET_EXTREME)
             compressed_size = len(compressed_byte_arr)
-        if self.author not in self.authors:
-            self.db_cursor.execute('INSERT INTO Authors (aName) VALUES (?);', (self.author,))
-        aId = int(self.db_cursor.execute('SELECT aId FROM Authors WHERE aName = ?;', (self.author,)).fetchone()[0])
+        self.db.authors_table.add_author(self.author)
+        aId = self.db.authors_table.get_author_id(self.author)
         bId = None
         if self.book:
             bId = int(self.db_cursor.execute('SELECT bId FROM BibleBooks WHERE bName = ?;', (self.book,)).fetchone()[0])
@@ -284,7 +283,7 @@ class MainWindow(Gtk.ApplicationWindow):
         main_box.pack_start(buttons_box, True, True, 0)
 
     def on_add_button_clicked(self, widget):
-        win = AddWindow(self.db_cursor, self.props.title)
+        win = AddWindow(self.db, self.db_cursor, self.props.title)
         win.connect('delete-event', self.on_add_window_closed)
         win.show_all()
 
