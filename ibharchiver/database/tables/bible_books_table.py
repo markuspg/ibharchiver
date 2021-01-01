@@ -25,3 +25,13 @@ class BibleBooksTable:
         if not self.db_cursor.execute('SELECT * FROM BibleBooks').fetchall():
             for bible_book in self.BIBLE_BOOKS:
                 self.db_cursor.execute('INSERT INTO BibleBooks (bName) VALUES (?)', (bible_book,))
+
+        self.cache = dict()
+        for bible_book_row in self.db_cursor.execute('SELECT * FROM BibleBooks;'):
+            self.cache[bible_book_row[1]] = int(bible_book_row[0])
+
+    def get_bible_books(self):
+        return [x[0] for x in sorted(list(self.cache.items()), key=lambda item: item[1])]
+
+    def get_bible_book_id(self, bible_book):
+        return self.cache[bible_book]

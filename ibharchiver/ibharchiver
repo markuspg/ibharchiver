@@ -117,8 +117,8 @@ class AddWindow(Gtk.Window):
         scripture_lbl = Gtk.Label(label='Scripture')
         grid.attach(scripture_lbl, 0, grid_row, 1, 1)
         bible_book_cb = Gtk.ComboBoxText()
-        for bible_book_row in self.db_cursor.execute('SELECT * FROM BibleBooks;'):
-            bible_book_cb.append_text(bible_book_row[1])
+        for bible_book in self.db.bible_books_table.get_bible_books():
+            bible_book_cb.append_text(bible_book)
         self.book = bible_book_cb.get_active_text()
         bible_book_cb.connect('changed', self.on_book_changed)
         grid.attach(bible_book_cb, 1, grid_row, 1, 1)
@@ -146,7 +146,7 @@ class AddWindow(Gtk.Window):
         aId = self.db.authors_table.get_author_id(self.author)
         bId = None
         if self.book:
-            bId = int(self.db_cursor.execute('SELECT bId FROM BibleBooks WHERE bName = ?;', (self.book,)).fetchone()[0])
+            bId = self.db.bible_book_table.get_bible_book_id(self.book)
         self.db.categories_table.add_category(self.category)
         cId = self.db.categories_table.get_category_id(self.category)
         chapters = None
