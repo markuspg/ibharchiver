@@ -5,7 +5,7 @@ class ItemsTable:
     CREATE_TABLE_CMD = 'CREATE TABLE IF NOT EXISTS Items' \
             ' (type INTEGER,' \
             '  title TEXT NOT NULL,' \
-            '  bytes BLOB NOT NULL,' \
+            '  bytes BLOB NOT NULL UNIQUE,' \
             '  author INTEGER,' \
             '  categories TEXT NOT NULL,' \
             '  topics TEXT,' \
