@@ -31,6 +31,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import GObject # pylint: disable=C0413
 from gi.repository import Gtk # pylint: disable=C0413
 import os
+import tempfile
 import subprocess
 
 from database.ibhdatabase import IBHDatabase
@@ -295,9 +296,27 @@ class MainWindow(Gtk.ApplicationWindow):
         selection = self.tree_view.get_selection()
         model, tree_iter = selection.get_selected()
         if tree_iter is not None:
-            item_bytes, _, _ = self.db.items_table.get_resource(
+            item_bytes, _, item_size = self.db.items_table.get_resource(
                     model[tree_iter][0], model[tree_iter][1])
-            subprocess.run(['vlc', '-'], input=item_bytes)
+            prefix = 'ibharchiver_'
+            if model[tree_iter][0] == 'HTML':
+                suffix = '.html'
+            elif model[tree_iter][0] == 'MP3':
+                suffix = '.mp3'
+            elif model[tree_iter][0] == 'PDF':
+                suffix = '.pdf'
+            else:
+                raise RuntimeError('Invalid resource type encountered on "Play"')
+            tmp_hdl, tmp_path = tempfile.mkstemp(suffix, prefix)
+            assert os.write(tmp_hdl, item_bytes) == item_size
+            os.close(tmp_hdl)
+            if model[tree_iter][0] == 'HTML':
+                subprocess.run(['firefox', tmp_path])
+            elif model[tree_iter][0] == 'MP3':
+                subprocess.run(['vlc', tmp_path])
+            elif model[tree_iter][0] == 'PDF':
+                subprocess.run(['evince', tmp_path])
+            os.remove(tmp_path)
 
 def main():
     """
