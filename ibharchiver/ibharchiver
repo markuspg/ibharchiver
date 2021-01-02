@@ -155,6 +155,7 @@ class AddWindow(Gtk.Window):
         if self.verses:
             verses = int(self.verses)
         self.db.items_table.add_resource(rId, self.title, byte_arr, aId, cId, tId, bId, chapters, verses, os.path.basename(self.path))
+        self.close()
 
     def on_author_changed(self, widget):
         active_iter = widget.get_active_iter()
