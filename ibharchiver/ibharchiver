@@ -31,6 +31,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import GObject # pylint: disable=C0413
 from gi.repository import Gtk # pylint: disable=C0413
 import os
+import subprocess
 
 from database.ibhdatabase import IBHDatabase
 
@@ -291,7 +292,12 @@ class MainWindow(Gtk.ApplicationWindow):
                 assert out_file.write(item_bytes) == item_size
 
     def on_play_button_clicked(self, widget):
-        pass
+        selection = self.tree_view.get_selection()
+        model, tree_iter = selection.get_selected()
+        if tree_iter is not None:
+            item_bytes, _, _ = self.db.items_table.get_resource(
+                    model[tree_iter][0], model[tree_iter][1])
+            subprocess.run(['vlc', '-'], input=item_bytes)
 
 def main():
     """
