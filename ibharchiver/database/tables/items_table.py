@@ -38,7 +38,7 @@ class ItemsTable:
     def get_items_info(self):
         item_infos = list()
 
-        res = self.db_cursor.execute('SELECT rName, title, aName, categories, topics FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;')
+        res = self.db_cursor.execute('SELECT rName, title, aName, categories, topics FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;').fetchall()
         for re in res:
             categories = list()
             topics = list()
