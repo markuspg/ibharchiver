@@ -17,7 +17,7 @@ archive of [I'll Be Honest](https://illbehonest.com) resources.
 
 MIT License
 
-Copyright (c) 2020 Markus Prasser
+Copyright (c) 2020-2021 Markus Prasser
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
