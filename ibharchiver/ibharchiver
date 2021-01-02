@@ -142,7 +142,7 @@ class AddWindow(Gtk.Window):
         if self.book:
             bId = self.db.bible_book_table.get_bible_book_id(self.book)
         self.db.categories_table.add_category(self.category)
-        cId = self.db.categories_table.get_category_id(self.category)
+        cId = [self.db.categories_table.get_category_id(self.category)]
         chapters = None
         if self.chapters:
             chapters = int(self.chapters)
@@ -150,7 +150,7 @@ class AddWindow(Gtk.Window):
         tId = None
         if self.topic:
             self.db.topics_table.add_topic(self.topic)
-            tId = self.db.topics_table.get_topic_id(self.topic)
+            tId = [self.db.topics_table.get_topic_id(self.topic)]
         verses = None
         if self.verses:
             verses = int(self.verses)

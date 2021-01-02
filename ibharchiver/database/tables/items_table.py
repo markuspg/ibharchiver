@@ -7,8 +7,8 @@ class ItemsTable:
             '  title TEXT NOT NULL,' \
             '  bytes BLOB NOT NULL,' \
             '  author INTEGER,' \
-            '  category INTEGER,' \
-            '  topic INTEGER,' \
+            '  categories TEXT NOT NULL,' \
+            '  topics TEXT,' \
             '  comments TEXT,' \
             '  book INTEGER,' \
             '  chapters INTEGER,' \
@@ -21,8 +21,6 @@ class ItemsTable:
             '  compressedSize INTEGER NOT NULL,' \
             '  FOREIGN KEY(author) REFERENCES Authors(aId),' \
             '  FOREIGN KEY (book) REFERENCES BibleBooks(bId),' \
-            '  FOREIGN KEY(category) REFERENCES Categories(cId),' \
-            '  FOREIGN KEY(topic) REFERENCES Topics(tId),' \
             '  FOREIGN KEY(type) REFERENCES ResourceTypes(rId)' \
             '  UNIQUE(title, type));'
 
@@ -40,13 +38,16 @@ class ItemsTable:
     def get_items_info(self):
         item_infos = list()
 
-        res = self.db_cursor.execute('SELECT rName, title, aName, cName, topic FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN Categories ON Categories.cId = Items.category INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;')
+        res = self.db_cursor.execute('SELECT rName, title, aName, categories, topics FROM Items INNER JOIN Authors ON Authors.aId = Items.author INNER JOIN ResourceTypes ON ResourceTypes.rId = Items.type;')
         for re in res:
+            categories = list()
+            topics = list()
+            for c_id in [int(c_id_s) for c_id_s in re[3].split(',')]:
+                categories.append(self.db_cursor.execute('SELECT cName FROM Categories WHERE cId = ?;', (c_id,)).fetchone()[0])
             if re[4]:
-                topic = self.db_cursor.execute('SELECT tName FROM Topics WHERE tId = ?;', (re[4],)).fetchone()[0]
-            else:
-                topic = str()
-            item_infos.append((re[0], re[1], re[2], re[3], topic))
+                for t_id in [int(t_id_s) for t_id_s in re[4].split(',')]:
+                    topics.append(self.db_cursor.execute('SELECT tName FROM Topics WHERE tId = ?;', (re[4],)).fetchone()[0])
+            item_infos.append((re[0], re[1], re[2], ', '.join(categories), ', '.join(topics)))
 
         return item_infos
 
@@ -66,8 +67,11 @@ class ItemsTable:
         res = self.db_cursor.execute('SELECT bytes, filename, uncompressedSize from Items WHERE type = ? AND title = ?;', (r_id, title)).fetchone()
         return lzma.decompress(res[0]), res[1], res[2]
 
-    def add_resource(self, r_id, title, data_bytes, a_id, c_id, t_id, b_id, chapters, verses, filename):
+    def add_resource(self, r_id, title, data_bytes, a_id, c_ids, t_ids, b_id, chapters, verses, filename):
         uncompressed_size = len(data_bytes)
         compressed_bytes = lzma.compress(data_bytes, lzma.FORMAT_XZ, lzma.CHECK_SHA256, 9 | lzma.PRESET_EXTREME)
         compressed_size = len(compressed_bytes)
-        self.db_cursor.execute('INSERT INTO Items (type, title, bytes, author, category, topic, book, chapters, verses, filename, importDate, uncompressedSize, compressedSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (r_id, title, compressed_bytes, a_id, c_id, t_id, b_id, chapters, verses, filename, int(time.time()), uncompressed_size, compressed_size))
+        topics = None
+        if t_ids:
+            topics = ','.join([str(t_id) for t_id in t_ids])
+        self.db_cursor.execute('INSERT INTO Items (type, title, bytes, author, categories, topics, book, chapters, verses, filename, importDate, uncompressedSize, compressedSize) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (r_id, title, compressed_bytes, a_id, ','.join([str(c_id) for c_id in c_ids]), topics, b_id, chapters, verses, filename, int(time.time()), uncompressed_size, compressed_size))
