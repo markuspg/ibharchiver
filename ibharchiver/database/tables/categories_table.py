@@ -21,6 +21,9 @@
 # SOFTWARE
 
 class CategoriesTable:
+    CATEGORIES = ('Archives', 'Articles', 'Audio', 'Books', 'Excerpts',
+                  'Full Sermons', 'Questions & Answers', 'Sermon Jams',
+                  'Testimonies', 'Video', 'Video Blogs')
     CREATE_TABLE_CMD = 'CREATE TABLE IF NOT EXISTS Categories' \
             ' (cId   INTEGER PRIMARY KEY ASC,' \
              ' cName TEXT NOT NULL UNIQUE);'
@@ -29,6 +32,10 @@ class CategoriesTable:
         self.db_cursor = db_cursor
 
         self.db_cursor.execute(self.CREATE_TABLE_CMD)
+
+        if not self.db_cursor.execute('SELECT * FROM Categories;').fetchall():
+            for category in self.CATEGORIES:
+                self.db_cursor.execute('INSERT INTO Categories (cName) VALUES (?);', (category,))
 
         self.cache = dict()
         for category_row in self.db_cursor.execute('SELECT * FROM Categories;'):
