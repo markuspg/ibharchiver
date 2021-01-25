@@ -28,6 +28,7 @@ from database.tables.categories_table import CategoriesTable
 from database.tables.items_table import ItemsTable
 from database.tables.metadata_table import MetadataTable
 from database.tables.resource_types_table import ResourceTypesTable
+from database.tables.topic_areas_table import TopicAreasTable
 from database.tables.topics_table import TopicsTable
 
 class IBHDatabase:
@@ -44,6 +45,7 @@ class IBHDatabase:
         self.items_table = ItemsTable(self.db_cursor)
         self.metadata_table = MetadataTable(self.db_cursor)
         self.resource_types_table = ResourceTypesTable(self.db_cursor)
+        self.topic_areas_table = TopicAreasTable(self.db_cursor)
         self.topics_table = TopicsTable(self.db_cursor)
 
         self.db_conn.commit()
