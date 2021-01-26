@@ -23,20 +23,57 @@
 class TopicsTable:
     CREATE_TABLE_CMD = 'CREATE TABLE IF NOT EXISTS Topics' \
             ' (tId   INTEGER PRIMARY KEY ASC,' \
-             ' tName TEXT NOT NULL UNIQUE);'
+             ' tName TEXT NOT NULL UNIQUE,' \
+             ' tArea INTEGER,' \
+             ' FOREIGN KEY (tArea) REFERENCES TopicAreas(taId));'
+    TOPICS = {'Christian Living': ('Assurance', 'Bible Reading', 'Conscience',
+                                   'Death & Dying', 'Depression',
+                                   'Drinking Alcohol', 'Encouragement',
+                                   'Fasting', 'Feelings', 'Forgiveness',
+                                   'Hospitality', 'Joy', "Knowing God's Will",
+                                   'Legalism', 'Modesty', 'Money & Stewardship',
+                                   'Music', 'Prayer', 'Pride & Humility',
+                                   'Providence', 'Sabbath', 'Speech & Tongue',
+                                   'Suffering', 'Temptation', 'The Law',
+                                   'Work & Vacation', 'Worldliness'),
+              'Church Life': ('Baptism', 'Christian Unity', 'Church Discipline',
+                              'Church History / Biographies', 'Church Planting',
+                              'Corporate Prayer', 'Pastors & Elders',
+                              'Preaching', 'Revival', 'Spiritual Gifts',
+                              'The Church', "The Lord's Supper",
+                              "Woman's Roles"),
+              'Outreach': ('Apologetics', 'Evangelism', 'Evangelizing Children',
+                           'Missions', 'Open-Air Preaching', 'Tracts',
+                           'Witnessing to Lost Family'),
+              'Salvation': ('Adoption', 'End Times', 'Examine Yourself',
+                            'Faith', 'Heaven', 'Hell', 'Justification',
+                            'Lordship', 'Once Saved Always Saved?',
+                            'Regeneration / Born Again', 'Repentance',
+                            'Sanctification', 'The Gospel'),
+              'Theology': ('God', 'Jesus Christ', 'The Fear of God',
+                           'The Holiness of God', 'The Holy Spirit',
+                           'The Love of God', 'The Sovereignty of God',
+                           'The Trinity', 'The Wrath of God')}
 
-    def __init__(self, db_cursor):
+    def __init__(self, db_cursor, ta_table):
         self.db_cursor = db_cursor
+        self.ta_table = ta_table
 
         self.db_cursor.execute(self.CREATE_TABLE_CMD)
+
+        if not self.db_cursor.execute('SELECT * FROM Topics;').fetchall():
+            for cat, tops in self.TOPICS.items():
+                for top in tops:
+                    self.db_cursor.execute('INSERT INTO Topics (tName, tArea) VALUES (?, ?);', (top, ta_table.get_topic_area_id(cat)))
 
         self.cache = dict()
         for topic_row in self.db_cursor.execute('SELECT * FROM Topics;'):
             self.cache[topic_row[1]] = int(topic_row[0])
 
-    def add_topic(self, topic):
+    def add_topic(self, topic, topic_area):
         if topic not in self.cache:
-            self.db_cursor.execute('INSERT INTO Topics (tName) VALUES (?);', (topic,))
+            t_area_id = self.ta_table.get_topic_area_id(topic_area)
+            self.db_cursor.execute('INSERT INTO Topics (tName, tArea) VALUES (?, ?);', (topic, t_area_id))
             self.cache[topic] = int(self.db_cursor.execute('SELECT tId FROM Topics WHERE tName = ?;', (topic,)).fetchone()[0])
 
     def get_topic_by_id(self, t_id):

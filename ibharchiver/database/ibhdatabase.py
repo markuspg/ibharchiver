@@ -46,6 +46,6 @@ class IBHDatabase:
         self.metadata_table = MetadataTable(self.db_cursor)
         self.resource_types_table = ResourceTypesTable(self.db_cursor)
         self.topic_areas_table = TopicAreasTable(self.db_cursor)
-        self.topics_table = TopicsTable(self.db_cursor)
+        self.topics_table = TopicsTable(self.db_cursor, self.topic_areas_table)
 
         self.db_conn.commit()
